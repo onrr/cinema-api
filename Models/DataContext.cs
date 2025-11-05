@@ -12,12 +12,14 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int>
     public DbSet<Genre> Genres { get; set; }
     public DbSet<Showtime> Showtimes { get; set; }
     public DbSet<MovieGenre> MovieGenres { get; set; }
+    public DbSet<Theater> Theaters { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
+        // Movie - Genre
         builder.Entity<MovieGenre>()
             .HasKey(mg => new { mg.MovieID, mg.GenreID });
 
@@ -31,6 +33,18 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int>
             .WithMany(g => g.MovieGenres)
             .HasForeignKey(mg => mg.GenreID);
 
+        // Theatre - Movie - showtime
+        builder.Entity<Showtime>()
+            .HasOne(s => s.Movie)
+            .WithMany(m => m.ShowTimes)
+            .HasForeignKey(s => s.MovieID)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Showtime>()
+            .HasOne(s => s.Theater)
+            .WithMany(t => t.ShowTimes)
+            .HasForeignKey(s => s.TheaterID)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Genre
         builder.Entity<Genre>().HasData(
@@ -91,11 +105,21 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int>
 
         // Show Time
         builder.Entity<Showtime>().HasData(
-            new Showtime { ID = 1, MovieID = 1, StartTime = DateTime.Parse("2025-11-05T18:30:00") },
-            new Showtime { ID = 2, MovieID = 1, StartTime = DateTime.Parse("2025-11-05T21:00:00") },
-            new Showtime { ID = 3, MovieID = 2, StartTime = DateTime.Parse("2025-11-06T19:00:00") },
-            new Showtime { ID = 4, MovieID = 3, StartTime = DateTime.Parse("2025-11-06T17:30:00") }
+            new Showtime { ID = 1, MovieID = 1, StartTime = DateTime.Parse("2025-11-05T18:30:00"), TheaterID = 1 },
+            new Showtime { ID = 2, MovieID = 1, StartTime = DateTime.Parse("2025-11-05T21:00:00"), TheaterID = 2 },
+            new Showtime { ID = 3, MovieID = 2, StartTime = DateTime.Parse("2025-11-06T19:00:00"), TheaterID = 1 },
+            new Showtime { ID = 4, MovieID = 3, StartTime = DateTime.Parse("2025-11-06T17:30:00"), TheaterID = 3 }
         );
+
+        // Theatre
+        builder.Entity<Theater>().HasData(
+            new Theater { ID = 1, Name = "No 1", Capacity = 30 },
+            new Theater { ID = 2, Name = "No 2", Capacity = 40 },
+            new Theater { ID = 3, Name = "No 3", Capacity = 50 }
+        );
+
+
+
 
     }
 }
