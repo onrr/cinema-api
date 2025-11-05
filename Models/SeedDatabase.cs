@@ -35,6 +35,23 @@ namespace Cinema.Models
                 await userManager.CreateAsync(adminUser, "Admin123");
                 await userManager.AddToRoleAsync(adminUser, "Admin");
             }
+
+            var userEmail = "john@doe.com";
+            var user = await userManager.FindByEmailAsync(userEmail);
+
+            if (user == null)
+            {
+                user = new AppUser
+                {
+                    UserName = userEmail,
+                    Email = userEmail,
+                    FirstName = "John",
+                    LastName = "Doe"
+                };
+
+                await userManager.CreateAsync(user, "12345678Aa");
+                await userManager.AddToRoleAsync(user, "User");
+            }
         }
     }
 }
