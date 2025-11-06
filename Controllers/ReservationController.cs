@@ -41,7 +41,6 @@ namespace cinema.Controllers
                     r.SeatNumber,
                     r.UserEmail,
                     r.FullName,
-                    ShowTimeId = r.ShowtimeID,
                     Movie = r!.Showtime!.Movie!.Title,
                     Theater = r.Showtime.Theater!.Name,
                     r.Showtime.StartTime
@@ -73,7 +72,6 @@ namespace cinema.Controllers
                     r.SeatNumber,
                     r.UserEmail,
                     r.FullName,
-                    ShowTimeId = r.ShowtimeID,
                     Movie = r!.Showtime!.Movie!.Title,
                     Theater = r.Showtime.Theater!.Name,
                     r.Showtime.StartTime
@@ -106,8 +104,12 @@ namespace cinema.Controllers
                 .FirstOrDefaultAsync(s => s.ID == dto.ShowTimeID);
 
             if (showtime == null)
-                return BadRequest("Invalid.");
+                return BadRequest("There is no such showtime.");
 
+            if (showtime.StartTime < DateTime.Now)
+            {
+                return BadRequest("This showtime has already passed. You cannot make a reservation for it.");
+            }
 
             var theater = showtime.Theater!;
             int seatNumber = dto.SeatNumber;
@@ -149,7 +151,7 @@ namespace cinema.Controllers
         public async Task<IActionResult> CancelReservation(int id)
         {
             var userEmail = User.Claims
-                .FirstOrDefault(c => c.Type == "emailaddress")
+                .FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")
                 ?.Value;
 
             if (string.IsNullOrEmpty(userEmail))

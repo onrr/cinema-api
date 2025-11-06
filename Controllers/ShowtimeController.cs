@@ -72,6 +72,11 @@ namespace Cinema.Controllers
             if (!movieExists || !theaterExists)
                 return BadRequest("Movie or Theater does not exist.");
 
+            if (dto.StartTime < DateTime.Now)
+            {
+                return BadRequest("You cannot schedule a showtime in the past.");
+            }
+
             var threeHoursBefore = dto.StartTime.AddHours(-3);
             var threeHoursAfter = dto.StartTime.AddHours(3);
 
