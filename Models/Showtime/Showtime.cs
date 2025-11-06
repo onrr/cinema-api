@@ -8,5 +8,6 @@ namespace Cinema.Models
         public Movie? Movie { get; set; }
         public int TheaterID { get; set; }
         public Theater? Theater { get; set; }
+        public List<Reservation> Reservations { get; set; } = new();
     }
 }

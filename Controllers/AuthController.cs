@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Cinema.Services;
 using Cinema.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Cinema.Controllers;
 
@@ -57,6 +59,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public IActionResult Logout()
     {
         return Ok("Logged out successfully");

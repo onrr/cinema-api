@@ -13,6 +13,7 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int>
     public DbSet<Showtime> Showtimes { get; set; }
     public DbSet<MovieGenre> MovieGenres { get; set; }
     public DbSet<Theater> Theaters { get; set; }
+    public DbSet<Reservation> Reservations { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder builder)
