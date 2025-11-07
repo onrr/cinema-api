@@ -22,12 +22,16 @@ namespace Cinema.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetShowtimes()
         {
+            var today = DateTime.UtcNow.Date;
+            var threeDaysAgo = today.AddDays(-3);
+
             var showtimes = await _context.Showtimes
                 .Include(s => s.Movie)
                 .Include(s => s.Theater)
+                .Where(s => s.StartTime.Date >= threeDaysAgo)
+                .OrderBy(s => s.StartTime)
                 .Select(s => new
                 {
-                    s.ID,
                     MovieTitle = s.Movie!.Title,
                     TheaterName = s.Theater!.Name,
                     s.StartTime,
@@ -42,13 +46,15 @@ namespace Cinema.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetShowtime(int id)
         {
+            var today = DateTime.UtcNow.Date;
+            var threeDaysAgo = today.AddDays(-3);
+
             var showtime = await _context.Showtimes
                 .Include(s => s.Movie)
                 .Include(s => s.Theater)
-                .Where(s => s.ID == id)
+                .Where(s => s.ID == id && s.StartTime.Date >= threeDaysAgo)
                 .Select(s => new
                 {
-                    s.ID,
                     MovieTitle = s.Movie!.Title,
                     TheaterName = s.Theater!.Name,
                     s.StartTime
@@ -56,7 +62,7 @@ namespace Cinema.Controllers
                 .FirstOrDefaultAsync();
 
             if (showtime == null)
-                return NotFound();
+                return NotFound("Showtime not found.");
 
             return Ok(showtime);
         }
@@ -132,6 +138,10 @@ namespace Cinema.Controllers
             if (!movieExists || !theaterExists)
                 return BadRequest("Movie or Theater does not exist.");
 
+            if (dto.StartTime < DateTime.Now)
+            {
+                return BadRequest("You cannot schedule a showtime in the past.");
+            }
 
             var threeHoursBefore = dto.StartTime.AddHours(-3);
             var threeHoursAfter = dto.StartTime.AddHours(3);

@@ -5,6 +5,7 @@ using Cinema.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Cinema.Controllers;
 
@@ -53,15 +54,38 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return Unauthorized("Invalid email or password");
 
-
         var token = await _tokenService.CreateToken(user);
-        return Ok(new { message = "Login Successful", token });
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddMinutes(15)
+        };
+
+        Response.Cookies.Append("accessToken", token, cookieOptions);
+
+        return Ok("Login successful");
     }
 
     [HttpPost("logout")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public IActionResult Logout()
     {
+        Response.Cookies.Delete("accessToken");
         return Ok("Logged out successfully");
     }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("me")]
+    public IActionResult GetCurrentUser()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        var name = User.FindFirstValue(ClaimTypes.Name);
+        var role = User.FindFirstValue(ClaimTypes.Role);
+
+        return Ok(new { email, name, role });
+    }
+
 }

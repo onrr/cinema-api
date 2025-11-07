@@ -42,7 +42,7 @@ namespace Cinema.Services
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(45),
                 signingCredentials: creds
             );
 

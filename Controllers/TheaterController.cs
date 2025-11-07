@@ -22,7 +22,26 @@ namespace Cinema.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetTheaters()
         {
-            var theaters = await _context.Theaters.ToListAsync();
+            var today = DateTime.UtcNow.Date;
+            var threeDaysAgo = today.AddDays(-3);
+
+            var theaters = await _context.Theaters
+                .Select(t => new
+                {
+                    t.ID,
+                    t.Name,
+                    t.Capacity,
+                    ShowTimes = t.ShowTimes
+                        .Where(s => s.StartTime.Date >= threeDaysAgo)
+                        .OrderBy(s => s.StartTime)
+                        .Select(s => new
+                        {
+                            s.StartTime,
+                            MovieTitle = s.Movie!.Title
+                        })
+            .ToList()
+                })
+                .ToListAsync();
 
             if (theaters == null)
             {
@@ -36,7 +55,27 @@ namespace Cinema.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetTheater(int id)
         {
-            var theater = await _context.Theaters.FindAsync(id);
+            var today = DateTime.UtcNow.Date;
+            var threeDaysAgo = today.AddDays(-3);
+
+            var theater = await _context.Theaters
+                    .Where(t => t.ID == id)
+                    .Select(t => new
+                    {
+                        t.ID,
+                        t.Name,
+                        t.Capacity,
+                        ShowTimes = t.ShowTimes
+                            .Where(s => s.StartTime.Date >= threeDaysAgo)
+                            .OrderBy(s => s.StartTime)
+                            .Select(s => new
+                            {
+                                s.StartTime,
+                                MovieTitle = s.Movie!.Title
+                            })
+                            .ToList()
+                    })
+                    .FirstOrDefaultAsync();
 
             if (theater == null)
             {

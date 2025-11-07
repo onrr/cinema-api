@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 public class MovieController : ControllerBase
 {
     private readonly DataContext _context;
@@ -16,7 +17,6 @@ public class MovieController : ControllerBase
     }
 
     [HttpGet]
-    [AllowAnonymous]
     public async Task<IActionResult> GetMovies()
     {
         var movies = await _context.Movies
@@ -39,7 +39,6 @@ public class MovieController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetMovie(int id)
     {
         var movie = await _context.Movies
@@ -64,7 +63,6 @@ public class MovieController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> CreateMovie(CreateMovie dto)
     {
 
@@ -106,7 +104,6 @@ public class MovieController : ControllerBase
 
 
     [HttpPut("{id}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> UpdateMovie(int id, CreateMovie dto)
     {
 
@@ -152,7 +149,6 @@ public class MovieController : ControllerBase
 
 
     [HttpDelete("{id}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> DeleteMovie(int id)
     {
         var movie = await _context.Movies
