@@ -8,4 +8,5 @@ public class Reservation
     public string? UserEmail { get; set; }
     public string? FullName { get; set; }
     public int SeatNumber { get; set; }
+    public string Status { get; set; } = "Active";
 }

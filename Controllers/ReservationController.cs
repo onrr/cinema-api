@@ -38,12 +38,13 @@ namespace cinema.Controllers
                 .Select(r => new
                 {
                     r.ID,
-                    r.SeatNumber,
                     r.UserEmail,
                     r.FullName,
                     Movie = r!.Showtime!.Movie!.Title,
                     Theater = r.Showtime.Theater!.Name,
-                    r.Showtime.StartTime
+                    r.SeatNumber,
+                    r.Showtime.StartTime,
+                    r.Status
                 })
                 .ToListAsync();
 
@@ -69,12 +70,13 @@ namespace cinema.Controllers
                 .Select(r => new
                 {
                     r.ID,
-                    r.SeatNumber,
                     r.UserEmail,
                     r.FullName,
                     Movie = r!.Showtime!.Movie!.Title,
                     Theater = r.Showtime.Theater!.Name,
-                    r.Showtime.StartTime
+                    r.SeatNumber,
+                    r.Showtime.StartTime,
+                    r.Status
                 })
                 .FirstOrDefaultAsync();
 
@@ -120,7 +122,7 @@ namespace cinema.Controllers
             }
 
             bool seatTaken = await _context.Reservations
-                .AnyAsync(r => r.ShowtimeID == dto.ShowTimeID && r.SeatNumber == seatNumber);
+                .AnyAsync(r => r.ShowtimeID == dto.ShowTimeID && r.SeatNumber == seatNumber && r.Status != "Cancelled");
 
             if (seatTaken)
                 return BadRequest($"The selected seat number {seatNumber} is already reserved.");
@@ -139,11 +141,13 @@ namespace cinema.Controllers
             return Ok(new
             {
                 reservation.ID,
+                reservation.UserEmail,
                 reservation.FullName,
-                reservation.SeatNumber,
                 Movie = showtime.Movie!.Title,
                 Theater = showtime.Theater!.Name,
-                showtime.StartTime
+                reservation.SeatNumber,
+                showtime.StartTime,
+                reservation.Status
             });
         }
 
@@ -166,7 +170,8 @@ namespace cinema.Controllers
             if (reservation == null)
                 return NotFound("Reservation not found or you are not authorized to cancel it.");
 
-            _context.Reservations.Remove(reservation);
+            reservation.Status = "Cancelled";
+            _context.Reservations.Update(reservation);
             await _context.SaveChangesAsync();
 
             return Ok(new
@@ -178,7 +183,8 @@ namespace cinema.Controllers
                 Movie = reservation.Showtime!.Movie!.Title,
                 Theater = reservation.Showtime.Theater!.Name,
                 reservation.SeatNumber,
-                reservation.Showtime.StartTime
+                reservation.Showtime.StartTime,
+                reservation.Status
             });
         }
 
