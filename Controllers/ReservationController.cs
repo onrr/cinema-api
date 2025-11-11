@@ -170,6 +170,9 @@ namespace cinema.Controllers
             if (reservation == null)
                 return NotFound("Reservation not found or you are not authorized to cancel it.");
 
+            if (reservation.Status == "Cancelled")
+                return BadRequest("The reservation has already been cancelled.");
+            
             reservation.Status = "Cancelled";
             _context.Reservations.Update(reservation);
             await _context.SaveChangesAsync();

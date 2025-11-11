@@ -126,7 +126,8 @@ public class AdminController : ControllerBase
                 ShowtimeID = r.ShowtimeID,
                 MovieTitle = r.Showtime!.Movie!.Title,
                 TheaterName = r.Showtime.Theater!.Name,
-                r.SeatNumber
+                r.SeatNumber,
+                r.Status
             })
             .ToListAsync();
 
@@ -149,7 +150,8 @@ public class AdminController : ControllerBase
                 ShowtimeID = r.ShowtimeID,
                 MovieTitle = r.Showtime!.Movie!.Title,
                 TheaterName = r.Showtime.Theater!.Name,
-                r.SeatNumber
+                r.SeatNumber,
+                r.Status
             })
             .FirstOrDefaultAsync();
 
@@ -159,4 +161,36 @@ public class AdminController : ControllerBase
         return Ok(reservation);
     }
 
+    [HttpDelete("cancelReservation/{id}")]
+    public async Task<IActionResult> CancelReservation(int id)
+    {
+        var reservation = await _context.Reservations
+            .Include(r => r.Showtime)
+                .ThenInclude(s => s!.Movie)
+            .Include(r => r.Showtime!.Theater)
+            .FirstOrDefaultAsync(r => r.ID == id);
+
+        if (reservation == null)
+            return NotFound("Reservation not found");
+
+        if (reservation.Status == "Cancelled")
+            return BadRequest("The reservation has already been cancelled.");
+            
+        reservation.Status = "Cancelled";
+        _context.Reservations.Update(reservation);
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            Message = "Reservation successfully canceled.",
+            ReservationID = reservation.ID,
+            Email = reservation.UserEmail,
+            FullName = reservation.FullName,
+            Movie = reservation.Showtime!.Movie!.Title,
+            Theater = reservation.Showtime.Theater!.Name,
+            reservation.SeatNumber,
+            reservation.Showtime.StartTime,
+            reservation.Status
+        });
+    }
 }
